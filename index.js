@@ -7,7 +7,7 @@ const cors = require('cors');
 //const { mongoose} = require('./database');
 
 // Settings
-app.set('port', process.env.PORT || 3000);
+app.set('port', process.env.PORT || 3001);
 app.set('son spaces', 2);
 
 // Middlewares

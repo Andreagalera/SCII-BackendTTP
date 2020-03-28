@@ -4,8 +4,9 @@ const router = Router();
 
 const controller = require('../controllers/TTPCtrl');
 
-router.get('/', controller.getData);
-router.post('/', controller.postData);
-router.post('/sign', controller.signMessage);
+router.get('/publicKeyTTP', controller.getPublicKeyTTP);
+router.post('/msg3', controller.sendK);
+router.get('/downloadK', controller.downloadK);
+
 
 module.exports = router;
