@@ -7,6 +7,7 @@ const sha = require('object-sha');
 
 let keyPair;
 let k;
+let Pko;
 
 controllerCtrl.getPublicKeyTTP = async (req, res) => {
   try {
@@ -24,6 +25,8 @@ controllerCtrl.getPublicKeyTTP = async (req, res) => {
 controllerCtrl.sendK = async (req, res) => {
   console.log("Recive k");
   console.log(req.body);
+  console.log(req.body.k);
+  Pko = req.body.signature;
   try {
     k = req.body.body.k;
     var ts = new Date();
