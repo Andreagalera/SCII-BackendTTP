@@ -8,6 +8,8 @@ const sha = require('object-sha');
 let keyPair;
 let k;
 let Pko;
+let bodyA;
+let signatureA;
 
 controllerCtrl.getPublicKeyTTP = async (req, res) => {
   try {
@@ -41,6 +43,8 @@ controllerCtrl.sendK = async (req, res) => {
     const digest = await sha.digest(body, 'SHA-256');
     const digestHex = bc.hexToBigint(digest);
     const signature = await keyPair["privateKey"].sign(digestHex);
+    bodyA = body;
+    signatureA = bc.bigintToHex(signature);
     res.status(200).send({
       body: body,
       signature: bc.bigintToHex(signature)
@@ -48,14 +52,28 @@ controllerCtrl.sendK = async (req, res) => {
   } catch (err) {
     res.status(500).send({ message: err })
   }
+
+  sendAdvertToB();
 }
 
-  controllerCtrl.downloadK = async (req, res) => {
-  try {
-        res.status(200).send({k})
-  } catch (err) {
-    res.status(500).send({ message: err })
+function sendAdvertToB() {
+  require('request')('http://localhost:3000/api/clientes/advertB', (err, res, body) => {
+    console.log(body);
+  //   try {
+  //       res.status(200).send({ message: k})
+  // } catch (err) {
+  //   res.status(500).send({ message: err })
+  // }
+  // res.send("Hola");
   }
+  )
+};
+
+  
+
+  controllerCtrl.downloadK = async (req, res) => {
+  console.log("k2", k);
+  res.send(k);
 }
 
 module.exports = controllerCtrl;
