@@ -10,6 +10,7 @@ let k;
 let Pko;
 let bodyA;
 let signatureA;
+let aPubKey;
 
 controllerCtrl.getPublicKeyTTP = async (req, res) => {
   try {
@@ -27,18 +28,27 @@ controllerCtrl.getPublicKeyTTP = async (req, res) => {
 controllerCtrl.sendK = async (req, res) => {
   console.log("Recive k");
   console.log(req.body);
-  console.log(req.body.k);
+  console.log(req.body.body.k);
   Pko = req.body.signature;
+  aPubKey = new rsa.PublicKey(bc.hexToBigint(req.body.pubKey.e), bc.hexToBigint(req.body.pubKey.n));
+  let proofDigest = bc.bigintToHex(await aPubKey.verify(bc.hexToBigint(req.body.signature)));
+  let bodyDigest = await sha.digest(req.body.body);
+  // Comprovar timestamp
+  var tsTTP = new Date();
+  var tsA = req.body.body.timestamp;
+  tsA = new Date(tsA);
+  var seconds = (tsTTP.getTime() - tsA.getTime()) / 1000;
+  console.log(seconds);
+  if ((bodyDigest === proofDigest) && (seconds < 1)) {
   try {
     k = req.body.body.k;
-    var ts = new Date();
     const body = {
       type: "4",
       ttp: "TTP",
       src: "A",
       dest: "B",
       k: k,
-      timestamp: ts
+      timestamp: tsTTP
     };
     const digest = await sha.digest(body, 'SHA-256');
     const digestHex = bc.hexToBigint(digest);
@@ -52,8 +62,10 @@ controllerCtrl.sendK = async (req, res) => {
   } catch (err) {
     res.status(500).send({ message: err })
   }
-
   sendAdvertToB();
+}
+else { console.log("Pruebas malamente"); }
+
 }
 
 function sendAdvertToB() {
