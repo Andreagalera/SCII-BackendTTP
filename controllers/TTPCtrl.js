@@ -7,6 +7,7 @@ const sha = require('object-sha');
 
 let keyPair;
 let k;
+let iv;
 let Pko;
 let bodyA;
 let signatureA;
@@ -40,52 +41,54 @@ controllerCtrl.sendK = async (req, res) => {
   var seconds = (tsTTP.getTime() - tsA.getTime()) / 1000;
   console.log(seconds);
   if ((bodyDigest === proofDigest) && (seconds < 1)) {
-  try {
-    k = req.body.body.k;
-    const body = {
-      type: "4",
-      ttp: "TTP",
-      src: "A",
-      dest: "B",
-      k: k,
-      timestamp: tsTTP
-    };
-    const digest = await sha.digest(body, 'SHA-256');
-    const digestHex = bc.hexToBigint(digest);
-    const signature = await keyPair["privateKey"].sign(digestHex);
-    bodyA = body;
-    signatureA = bc.bigintToHex(signature);
-    res.status(200).send({
-      body: body,
-      signature: bc.bigintToHex(signature)
-    })
-  } catch (err) {
-    res.status(500).send({ message: err })
+    try {
+      k = req.body.body.k;
+      iv = req.body.body.iv;
+      const body = {
+        type: "4",
+        ttp: "TTP",
+        src: "A",
+        dest: "B",
+        k: k,
+        iv: iv,
+        timestamp: tsTTP
+      };
+      const digest = await sha.digest(body, 'SHA-256');
+      const digestHex = bc.hexToBigint(digest);
+      const signature = await keyPair["privateKey"].sign(digestHex);
+      bodyA = body;
+      signatureA = bc.bigintToHex(signature);
+      res.status(200).send({
+        body: body,
+        signature: bc.bigintToHex(signature)
+      })
+    } catch (err) {
+      res.status(500).send({ message: err })
+    }
+    sendAdvertToB();
   }
-  sendAdvertToB();
-}
-else { console.log("Pruebas malamente"); }
+  else { console.log("Pruebas malamente"); }
 
 }
 
 function sendAdvertToB() {
   require('request')('http://localhost:3000/api/clientes/advertB', (err, res, body) => {
     console.log(body);
-  //   try {
-  //       res.status(200).send({ message: k})
-  // } catch (err) {
-  //   res.status(500).send({ message: err })
-  // }
-  // res.send("Hola");
+    //   try {
+    //       res.status(200).send({ message: k})
+    // } catch (err) {
+    //   res.status(500).send({ message: err })
+    // }
+    // res.send("Hola");
   }
   )
 };
 
-  
 
-  controllerCtrl.downloadK = async (req, res) => {
+
+controllerCtrl.downloadK = async (req, res) => {
   console.log("k2", k);
-  res.send(k);
+  res.send(k+"-"+iv);
 }
 
 module.exports = controllerCtrl;
